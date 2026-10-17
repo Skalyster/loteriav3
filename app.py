@@ -503,25 +503,21 @@ if 'bg_sync_started' not in st.session_state:
 def mostrar_bolas(apuestas, color_principal, color_extra, texto_extra="R"):
     st.markdown(f"""
     <style>
+        /* Un único tamaño de bola para toda la app (apuestas y últimos resultados) */
+        :root {{ --ball: clamp(30px, 9.4vw, 40px); --ball-gap: clamp(4px, 1.3vw, 7px); }}
         .lottery-container {{ display: flex; flex-direction: column; gap: 14px; margin-top: 15px; }}
         .lottery-block {{ display: flex; flex-direction: column; gap: 4px; }}
         .label {{ font-weight: bold; opacity: 0.7; font-size: 13px; }}
-        /* Una sola línea siempre: las bolas se encogen según el ancho disponible */
-        .lottery-row {{ display: flex; align-items: center; gap: clamp(3px, 1.2vw, 10px); flex-wrap: nowrap; width: 100%; }}
+        .lottery-row {{ display: flex; align-items: center; justify-content: flex-start; gap: var(--ball-gap); flex-wrap: nowrap; }}
         .ball {{
-            flex: 1 1 0; min-width: 0; max-width: 44px; aspect-ratio: 1 / 1;
+            flex: 0 0 var(--ball); width: var(--ball); height: var(--ball);
             display: flex; justify-content: center; align-items: center;
-            border-radius: 50%;
-            color: white; font-weight: bold; font-size: clamp(12px, 4vw, 19px);
+            border-radius: 50%; box-sizing: border-box;
+            color: white; font-weight: bold; font-size: calc(var(--ball) * 0.42);
             box-shadow: 2px 2px 5px rgba(0,0,0,0.2); background-color: {color_principal};
             line-height: 1;
         }}
-        .ball-extra {{
-            background-color: {color_extra}; flex: 0 0 auto; max-width: none; aspect-ratio: auto;
-            height: clamp(28px, 8.5vw, 36px); padding: 0 clamp(6px, 2vw, 10px);
-            border-radius: 999px; font-size: clamp(11px, 3.4vw, 16px); margin-left: clamp(2px, 1vw, 8px);
-            white-space: nowrap;
-        }}
+        .ball-extra {{ background-color: {color_extra}; margin-left: var(--ball-gap); font-size: calc(var(--ball) * 0.36); }}
     </style>
     """, unsafe_allow_html=True)
     html = "<div class='lottery-container'>"
@@ -529,7 +525,7 @@ def mostrar_bolas(apuestas, color_principal, color_extra, texto_extra="R"):
         html += f"<div class='lottery-block'><span class='label'>Apuesta {i+1}</span><div class='lottery-row'>"
         for num in apuesta['numeros']:
             html += f"<span class='ball'>{num}</span>"
-        html += f"<span class='ball ball-extra'>{texto_extra.strip()} {apuesta['extra']}</span></div></div>"
+        html += f"<span class='ball ball-extra'>{texto_extra.strip().rstrip(':')}{apuesta['extra']}</span></div></div>"
     html += "</div>"
     st.markdown(html, unsafe_allow_html=True)
 
@@ -565,9 +561,10 @@ def mostrar_ultimos_resultados(juego, alinear_con_boton=False):
             .res-container {{ display: flex; flex-direction: column; gap: 15px; margin-top: 0px; }}
             .res-row {{ display: flex; flex-direction: column; gap: 4px; background: rgba(128,128,128,0.12); padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(128,128,128,0.25); }}
             .res-date {{ font-weight: bold; opacity: 0.75; font-size: 12px; }}
-            .res-balls {{ display: flex; align-items: center; flex-wrap: nowrap; gap: clamp(3px, 1.2vw, 8px); width: 100%; }}
-            .res-ball {{ flex: 1 1 0; min-width: 0; max-width: 36px; aspect-ratio: 1 / 1; display: flex; justify-content: center; align-items: center; border-radius: 50%; color: white; font-weight: bold; font-size: clamp(11px, 3.6vw, 16px); background-color: {color_principal}; box-shadow: 1px 1px 3px rgba(0,0,0,0.2); line-height: 1; }}
-            .res-extra {{ background-color: {color_extra}; flex: 0 0 auto; max-width: none; aspect-ratio: auto; height: clamp(26px, 8vw, 36px); padding: 0 clamp(5px, 1.8vw, 9px); border-radius: 999px; font-size: clamp(10px, 3vw, 13px); margin-left: clamp(2px, 1vw, 6px); white-space: nowrap; }}
+            :root {{ --ball: clamp(30px, 9.4vw, 40px); --ball-gap: clamp(4px, 1.3vw, 7px); }}
+            .res-balls {{ display: flex; align-items: center; justify-content: flex-start; flex-wrap: nowrap; gap: var(--ball-gap); }}
+            .res-ball {{ flex: 0 0 var(--ball); width: var(--ball); height: var(--ball); box-sizing: border-box; display: flex; justify-content: center; align-items: center; border-radius: 50%; color: white; font-weight: bold; font-size: calc(var(--ball) * 0.42); background-color: {color_principal}; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); line-height: 1; }}
+            .res-extra {{ background-color: {color_extra}; margin-left: var(--ball-gap); font-size: calc(var(--ball) * 0.36); }}
         </style>
         """, unsafe_allow_html=True)
         html = "<div class='res-container'>"
@@ -576,7 +573,7 @@ def mostrar_ultimos_resultados(juego, alinear_con_boton=False):
             nums = str(row['numeros']).split(',')
             for n in nums:
                 html += f"<span class='res-ball'>{n}</span>"
-            html += f"<span class='res-ball res-extra'>{texto_extra.strip()} {int(row['reintegro'])}</span></div></div>"
+            html += f"<span class='res-ball res-extra'>{texto_extra.strip().rstrip(':')}{int(row['reintegro'])}</span></div></div>"
         html += "</div>"
         st.markdown(html, unsafe_allow_html=True)
         
@@ -614,8 +611,9 @@ st.markdown("""
     .st-key-topnav [data-testid="stColumn"] { min-width: 0 !important; flex: 1 1 0 !important; width: auto !important; }
     .st-key-topnav [data-testid="stColumn"] > div { gap: 0.35rem !important; }
     /* Caja de logo de tamaño fijo: todos centrados y a la misma altura, sea cual sea su proporción */
-    .nav-logo { height: 58px; display: flex; align-items: center; justify-content: center; }
-    .nav-logo img { max-height: 100%; max-width: 100%; width: auto; height: auto; object-fit: contain; }
+    .nav-logo { height: 72px; box-sizing: border-box; padding: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: rgba(128,128,128,0.12); border: 1px solid rgba(128,128,128,0.25); border-radius: 8px; }
+    .nav-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .st-key-topnav [data-testid="stMarkdownContainer"] p { margin: 0 !important; }
     .st-key-topnav button { padding: 0.35rem 0.2rem !important; min-height: 46px; }
     .st-key-topnav button p { font-size: clamp(12px, 3.4vw, 15px) !important; line-height: 1.15 !important; white-space: normal !important; overflow: visible !important; text-overflow: clip !important; text-align: center; }
 </style>

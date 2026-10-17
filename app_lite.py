@@ -124,10 +124,11 @@ if st.button("🎰 GENERAR 5 APUESTAS", use_container_width=True):
         for i, (nums, extra) in enumerate(res):
             html += "<div style='display: flex; flex-direction: column; gap: 4px;'>"
             html += f"<b style='opacity: 0.7; font-size: 13px;'>Apuesta {i+1}</b>"
-            html += "<div style='display: flex; align-items: center; flex-wrap: nowrap; gap: clamp(3px, 1.2vw, 10px); width: 100%;'>"
+            html += "<div style='--ball: clamp(30px, 9.4vw, 40px); --gap: clamp(4px, 1.3vw, 7px); display: flex; align-items: center; justify-content: flex-start; flex-wrap: nowrap; gap: var(--gap);'>"
+            base = "flex: 0 0 var(--ball); width: var(--ball); height: var(--ball); box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; font-weight: bold; line-height: 1; box-shadow: 2px 2px 5px rgba(0,0,0,0.2);"
             for n in nums:
-                html += f"<span style='flex: 1 1 0; min-width: 0; max-width: 44px; aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; font-weight: bold; font-size: clamp(12px, 4vw, 19px); line-height: 1; background-color: {cp}; box-shadow: 1px 1px 3px rgba(0,0,0,0.3);'>{n}</span>"
-            html += f"<span style='flex: 0 0 auto; display: flex; align-items: center; justify-content: center; height: clamp(28px, 8.5vw, 36px); padding: 0 clamp(6px, 2vw, 10px); border-radius: 999px; color: white; font-weight: bold; font-size: clamp(11px, 3.4vw, 16px); white-space: nowrap; background-color: {ce}; box-shadow: 1px 1px 3px rgba(0,0,0,0.3); margin-left: clamp(2px, 1vw, 8px);'>{txt}: {extra}</span>"
+                html += f"<span style='{base} font-size: calc(var(--ball) * 0.42); background-color: {cp};'>{n}</span>"
+            html += f"<span style='{base} font-size: calc(var(--ball) * 0.36); background-color: {ce}; margin-left: var(--gap);'>{txt}{extra}</span>"
             html += "</div></div>"
         html += "</div>"
         st.markdown(html, unsafe_allow_html=True)
