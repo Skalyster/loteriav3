@@ -5,6 +5,7 @@ from collections import Counter
 import random
 import altair as alt
 import os
+import base64
 import requests
 import time
 import re
@@ -611,9 +612,12 @@ st.markdown("""
     /* Barra superior: los 3 botones siempre en una sola fila, también en móvil */
     .st-key-topnav [data-testid="stHorizontalBlock"] { flex-wrap: nowrap !important; gap: 0.4rem !important; }
     .st-key-topnav [data-testid="stColumn"] { min-width: 0 !important; flex: 1 1 0 !important; width: auto !important; }
-    .st-key-topnav [data-testid="stImage"] { display: flex; justify-content: center; margin-bottom: 2px; }
-    .st-key-topnav button { padding: 0.35rem 0.2rem !important; }
-    .st-key-topnav button p { font-size: clamp(12px, 3.4vw, 15px) !important; line-height: 1.15 !important; }
+    .st-key-topnav [data-testid="stColumn"] > div { gap: 0.35rem !important; }
+    /* Caja de logo de tamaño fijo: todos centrados y a la misma altura, sea cual sea su proporción */
+    .nav-logo { height: 58px; display: flex; align-items: center; justify-content: center; }
+    .nav-logo img { max-height: 100%; max-width: 100%; width: auto; height: auto; object-fit: contain; }
+    .st-key-topnav button { padding: 0.35rem 0.2rem !important; min-height: 46px; }
+    .st-key-topnav button p { font-size: clamp(12px, 3.4vw, 15px) !important; line-height: 1.15 !important; white-space: normal !important; overflow: visible !important; text-overflow: clip !important; text-align: center; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -630,12 +634,21 @@ JUEGOS_NAV = [
 ]
 
 # ─── BARRA SUPERIOR DE NAVEGACIÓN (logo opcional + texto) ───
+def logo_html(ruta):
+    """Devuelve el logo como <img> en base64 dentro de una caja de tamaño fijo (o '' si no existe)."""
+    if not os.path.exists(ruta):
+        return ""
+    with open(ruta, "rb") as f:
+        b64 = base64.b64encode(f.read()).decode()
+    return f"<div class='nav-logo'><img src='data:image/png;base64,{b64}'></div>"
+
 with st.container(key="topnav"):
     cols_nav = st.columns(3)
     for col, (clave, etiqueta, logo, key_btn) in zip(cols_nav, JUEGOS_NAV):
         with col:
-            if os.path.exists(logo):
-                st.image(logo, width=34)
+            html_logo = logo_html(logo)
+            if html_logo:
+                st.markdown(html_logo, unsafe_allow_html=True)
             activo = st.session_state.juego == clave
             if st.button(etiqueta, key=key_btn, use_container_width=True, type="primary" if activo else "secondary"):
                 st.session_state.juego = clave
