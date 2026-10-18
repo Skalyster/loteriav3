@@ -633,7 +633,7 @@ JUEGOS_NAV = [
 
 # ─── BARRA SUPERIOR DE NAVEGACIÓN (logo opcional + texto) ───
 # Logos (nombre de archivo sin extensión) que se muestran sobre fondo negro
-LOGOS_FONDO_NEGRO = {"bonoloto"}
+LOGOS_FONDO_NEGRO = set()  # p. ej. {"bonoloto"} para convertir blancos a negro
 
 def _blanco_a_negro(svg_texto):
     """Cambia los blancos del SVG (fondo incluido) por negro."""
