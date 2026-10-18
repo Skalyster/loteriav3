@@ -611,7 +611,7 @@ st.markdown("""
     .st-key-topnav [data-testid="stColumn"] { min-width: 0 !important; flex: 1 1 0 !important; width: auto !important; }
     .st-key-topnav [data-testid="stColumn"] > div { gap: 0.35rem !important; }
     /* Caja de logo de tamaño fijo: todos centrados y a la misma altura, sea cual sea su proporción */
-    .nav-logo { height: 72px; box-sizing: border-box; padding: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: rgba(128,128,128,0.12); border: 1px solid rgba(128,128,128,0.25); border-radius: 8px; }
+    .nav-logo { height: 96px; box-sizing: border-box; padding: 6px; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: rgba(128,128,128,0.12); border: 1px solid rgba(128,128,128,0.25); border-radius: 8px; }
     .nav-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
     .st-key-topnav [data-testid="stMarkdownContainer"] p { margin: 0 !important; }
     .st-key-topnav button { padding: 0.35rem 0.2rem !important; min-height: 46px; }
@@ -636,8 +636,31 @@ def logo_html(ruta):
     """Devuelve el logo como <img> en base64 dentro de una caja de tamaño fijo (o '' si no existe)."""
     if not os.path.exists(ruta):
         return ""
-    with open(ruta, "rb") as f:
-        b64 = base64.b64encode(f.read()).decode()
+    return _logo_b64(ruta)
+
+@st.cache_data(show_spinner=False)
+def _logo_b64(ruta):
+    """Recorta los márgenes vacíos (transparentes o blancos) del logo para que ocupe todo el recuadro."""
+    import io
+    try:
+        from PIL import Image, ImageChops
+        img = Image.open(ruta).convert("RGBA")
+        # Margen transparente
+        bbox = img.getchannel("A").getbbox()
+        # Margen de color liso (el color de la esquina)
+        fondo = Image.new("RGBA", img.size, img.getpixel((0, 0)))
+        bbox2 = ImageChops.difference(img, fondo).getbbox()
+        if bbox2 and (not bbox or (bbox2[2]-bbox2[0])*(bbox2[3]-bbox2[1]) < (bbox[2]-bbox[0])*(bbox[3]-bbox[1])):
+            bbox = bbox2
+        if bbox:
+            img = img.crop(bbox)
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        datos = buf.getvalue()
+    except Exception:
+        with open(ruta, "rb") as f:
+            datos = f.read()
+    b64 = base64.b64encode(datos).decode()
     return f"<div class='nav-logo'><img src='data:image/png;base64,{b64}'></div>"
 
 with st.container(key="topnav"):
