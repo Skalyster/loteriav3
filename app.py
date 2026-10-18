@@ -632,14 +632,29 @@ JUEGOS_NAV = [
 ]
 
 # ─── BARRA SUPERIOR DE NAVEGACIÓN (logo opcional + texto) ───
+# Logos (nombre de archivo sin extensión) que se muestran sobre fondo negro
+LOGOS_FONDO_NEGRO = {"bonoloto"}
+
+def _blanco_a_negro(svg_texto):
+    """Cambia los blancos del SVG (fondo incluido) por negro."""
+    svg_texto = re.sub(r'#f{3}(?:f{3})?(?![0-9a-fA-F])', '#000000', svg_texto, flags=re.IGNORECASE)
+    svg_texto = re.sub(r'rgb\(\s*255\s*,\s*255\s*,\s*255\s*\)', '#000000', svg_texto, flags=re.IGNORECASE)
+    svg_texto = re.sub(r'(fill|stop-color|background(?:-color)?)\s*([=:])\s*(["\']?)white\b', r'\1\2\3#000000', svg_texto, flags=re.IGNORECASE)
+    return svg_texto
+
 def logo_html(ruta):
     """Devuelve el logo como <img> en base64 dentro de una caja de tamaño fijo (o '' si no existe)."""
     # Si existe la versión SVG del logo (mismo nombre), tiene prioridad sobre el PNG
     svg = os.path.splitext(ruta)[0] + ".svg"
     if os.path.exists(svg):
-        with open(svg, "rb") as f:
-            b64 = base64.b64encode(f.read()).decode()
-        return f"<div class='nav-logo'><img src='data:image/svg+xml;base64,{b64}'></div>"
+        with open(svg, "r", encoding="utf-8", errors="ignore") as f:
+            contenido = f.read()
+        estilo = ""
+        if os.path.splitext(os.path.basename(svg))[0] in LOGOS_FONDO_NEGRO:
+            contenido = _blanco_a_negro(contenido)
+            estilo = " style='background:#000;'"
+        b64 = base64.b64encode(contenido.encode("utf-8")).decode()
+        return f"<div class='nav-logo'{estilo}><img src='data:image/svg+xml;base64,{b64}'></div>"
     if not os.path.exists(ruta):
         return ""
     return _logo_b64(ruta)
