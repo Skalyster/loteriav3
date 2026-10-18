@@ -634,6 +634,12 @@ JUEGOS_NAV = [
 # ─── BARRA SUPERIOR DE NAVEGACIÓN (logo opcional + texto) ───
 def logo_html(ruta):
     """Devuelve el logo como <img> en base64 dentro de una caja de tamaño fijo (o '' si no existe)."""
+    # Si existe la versión SVG del logo (mismo nombre), tiene prioridad sobre el PNG
+    svg = os.path.splitext(ruta)[0] + ".svg"
+    if os.path.exists(svg):
+        with open(svg, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode()
+        return f"<div class='nav-logo'><img src='data:image/svg+xml;base64,{b64}'></div>"
     if not os.path.exists(ruta):
         return ""
     return _logo_b64(ruta)
